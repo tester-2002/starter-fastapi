@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .user-info {
+            margin-bottom: 20px;
+        }
+
+        .logout-link {
+            text-decoration: none;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        form {
+            width: 100%;
+            max-width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Style for "Need Help" button */
+        .help-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #eb2d3a;
+            /* Color specified */
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+            /* Added some top margin for spacing */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="user-info">
+        Logged in as {{ username | tojson }} |
+        <a class="logout-link" href="/logout">Logout</a>
+    </div>
+
+    <form method="post" action="/vote">
+        <h1>Vote &#128077;</h1>
+        <button id="voteButton" onclick="vote()">Submit Vote</button>
+        <a href="#" id="helpLink"><button class="help-button">Need Help</button></a>
+    </form>
+    <script>
+        document.getElementById("voteButton").addEventListener("click", function () {
+            // Handle vote button click
+            document.getElementById("voteForm").submit();
+        });
+
+        document.getElementById("helpLink").addEventListener("click", function (event) {
+            // Handle help link click
+            event.preventDefault(); // Prevent the default link behavior
+            requestHelp();
+        });
+
+        function requestHelp() {
+            // Fetch the username from the server and store it in the Help table
+            fetch("/help", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: {{ username | tojson }},
+                }),
+            })
+                .then(response => response.json())
+            .then(data => {
+                console.log("Help requested:", data.message);
+            })
+            .catch(error => {
+                console.error("Error requesting help:", error);
+            });
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script>
+        var socket = io.connect("http://" + document.domain + ":" + location.port);
+
+        function vote() {
+            // Disable the button to prevent multiple votes
+            document.getElementById("voteButton").disabled = true;
+
+            // Send a request to the server to update the vote
+            socket.emit("vote", { username: {{ username | tojson }} });
+
+        // Optionally, you can show a message or perform other actions after the vote is submitted
+        console.log("Vote submitted!");
+        }
+    </script>
+</body>
+
+</html>

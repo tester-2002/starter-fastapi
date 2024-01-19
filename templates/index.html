@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask SocketIO App</title>
+</head>
+<body>
+    <h1>Flask SocketIO App</h1>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to the server');
+        });
+
+        // Example sending a message to the server
+        socket.emit('message', 'Hello, server!');
+
+        // You can add more Socket.IO events and interactions here
+    </script>
+</body>
+</html>

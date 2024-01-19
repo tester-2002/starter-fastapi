@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .text {
+            font-size: 40pt;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="my_dataviz"></div>
+    <div class="text">
+        <p id="count2"></p>
+        <p id="count1"></p>
+    </div>
+    <script>
+        // set the dimensions and margins of the graph
+        var margin = { top: 10, right: 30, bottom: 90, left: 40 },
+            width = 700 - margin.left - margin.right,
+            height = 700 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Initialize previous data
+        var previousData = null;
+
+        // Parse the Data
+        async function fetchData() {
+            const response = await fetch('/get_votes_count');
+            const data = await response.json();
+            return data;
+        }
+
+        function foo(data) {
+            console.log(data);
+
+            // If the data is the same as the previous, do nothing
+            if (JSON.stringify(data) === JSON.stringify(previousData)) {
+                console.log("Data has not changed.");
+                return;
+            }
+
+            // Extract keys (categories) and values (counts) from the object
+            const categories = Object.keys(data);
+            const counts = Object.values(data);
+            var totalVotes = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+            // X axis
+            var x = d3.scaleBand()
+                .range([0, width])
+                .domain(categories)
+                .padding(0.2);
+
+            svg.select(".x.axis").remove(); // Remove existing x-axis
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "translate(-10,0)rotate(-45)")
+                .style("text-anchor", "end");
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(counts)]) // Use the maximum count as the y-axis domain
+                .range([height, 0])
+
+            svg.select(".y.axis").remove(); // Remove existing y-axis
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+
+            // Bars
+            var bars = svg.selectAll(".mybar")
+                .data(categories);
+
+            bars.enter()
+                .append("rect")
+                .attr("class", "mybar")
+                .attr("x", function (d) { return x(d); })
+                .attr("width", x.bandwidth())
+                .attr("fill", "#69b3a2")
+                .attr("y", height)
+                .attr("height", 0)
+                .merge(bars)
+                .transition()
+                .duration(800)
+                .attr("y", function (d) { return y(data[d]); })
+                .attr("height", function (d) { return height - y(data[d]); })
+                .style('fill', function (d) {
+                    // Set color based on the key
+                    return d[0] === '0' ? '#eb2d3a' : '#78c1a3';
+                });
+
+
+
+            // Update the numbers in the <p> tags
+            document.getElementById("count1").innerHTML = "&#128078;: " + data[Object.keys(data)[0]];
+            document.getElementById("count2").innerHTML = "&#128077;: " + data[Object.keys(data)[1]];
+
+            // Animation
+            // The transition for removed elements
+            bars.exit()
+                .transition()
+                .duration(800)
+                .attr("y", height)
+                .attr("height", 0)
+                .remove();
+
+
+            // Update previousData
+            previousData = data;
+        }
+
+        async function someFunction() {
+            const data = await fetchData();
+            console.log(data); // Log data to inspect its structure
+            foo(data);
+        }
+
+        someFunction();
+        setInterval(someFunction, 1000);
+    </script>
+</body>
+
+</html>

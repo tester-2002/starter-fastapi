@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>User Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            /* Light gray background color */
+            position: relative;
+            overflow: hidden;
+            /* Hide overflow to prevent scroll */
+        }
+
+        .df {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 40px;
+            margin-bottom: 50px;
+        }
+
+        .form2 {
+            display: block;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            position: relative;
+            width: 1300px;
+            /* Adjust the width as needed */
+
+            /* Add a maximum width for larger screens */
+            height: 550px;
+            /* Set height to auto to allow content to expand */
+            border-radius: 20px;
+            margin: 30px auto 0 auto;
+            /* Center the form2 horizontally */
+        }
+
+        .form4 {
+            display: flex;
+            flex-direction: column;
+            /* Adjust as needed */
+            align-items: center;
+            /* Adjust as needed */
+            text-align: center;
+            width: 100%;
+            margin: 0px 0px 200px 0px;
+            max-height: 450px;
+            /* Set the maximum height for the scroll view */
+            overflow-y: auto;
+            /* Add vertical scroll bar */
+        }
+
+        .form-box1 {
+            margin-top: 5px;
+            /* Adjust as needed */
+            background-color: #c5bfbf;
+            width: 100%;
+            height: 70px;
+            padding-bottom: 10px;
+            padding-top: auto;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+            /* Adjust margin as needed */
+        }
+
+        .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .dashboard-heading2 {
+            margin-right: auto;
+            /* Push to the left */
+        }
+
+        .button {
+            font-size: 16pt;
+            /* Adjust the font size as needed */
+            background-color: #ff2929;
+            /* Red button color */
+            border-color: #ff2929;
+            color: white;
+            text-align: center;
+            padding: 4px;
+            /* Adjust the padding as needed */
+            margin-right: 15px;
+            margin-top: 5px;
+            /* Add margin to create space between the buttons */
+            width: 150px;
+        }
+
+        .b_container {
+            display: flex;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .title_container {
+            color: white;
+            font-size: 16pt;
+            display: flex;
+            margin-left: 10px;
+            margin-top: auto;
+            justify-content: flex-start;
+        }
+
+        .upload_button {
+            font-size: 25px;
+            background-color: #2ecc71;
+            /* Green button color */
+            border-color: #2ecc71;
+            color: white;
+            text-align: center;
+            margin-left: auto;
+            /* Push to the right */
+            text-align: right;
+            /* Align text within the button to the right */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="df">
+        <div class="form2">
+            <div class="dashboard-heading2">
+                <div class="head">
+                    <h2><b>Help Requests</b></h2>
+                    <a href="#" class="btn upload_button" onclick="clearAll()">
+                        <b>Clear All</b>
+                    </a>
+                </div>
+            </div>
+            <div class="form4" id="helpRequests">
+                <!-- Help requests will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchDataAndRender(); // Initial fetch and render
+            setInterval(fetchDataAndRender, 1000); // Update every second
+        });
+
+        async function fetchDataAndRender() {
+            try {
+                const helpRequestsData = await fetchData();
+                renderHelpRequests(helpRequestsData);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        async function fetchData() {
+            const response = await fetch('/fetch_help_data');
+            console.log(response);
+            if (!response.ok) {
+                throw new Error('Failed to fetch help data');
+            }
+            return await response.json();
+        }
+
+        function renderHelpRequests(helpRequestsData) {
+            const helpRequestsElement = document.getElementById('helpRequests');
+            helpRequestsElement.innerHTML = '';
+
+            helpRequestsData.forEach(entry => {
+                const formBox1 = document.createElement('div');
+                formBox1.className = 'form-box1';
+
+                const titleContainer = document.createElement('div');
+                titleContainer.className = 'title_container';
+                titleContainer.innerHTML = `<p><b>Help Request ID ${entry.id} - Username: ${entry.username}</b></p>`;
+
+                const bContainer = document.createElement('div');
+                bContainer.className = 'b_container';
+
+                const deleteButton = createButton('Delete', '#', () => deleteHelpRequest(entry.id));
+
+                bContainer.appendChild(deleteButton);
+
+                formBox1.appendChild(titleContainer);
+                formBox1.appendChild(bContainer);
+
+                helpRequestsElement.appendChild(formBox1);
+            });
+        }
+
+        function createButton(text, url, clickHandler) {
+            const button = document.createElement('button');
+            button.className = 'btn button';
+            button.innerText = text;
+            button.style.marginRight = '15px';
+            button.style.marginTop = '5px';
+            button.addEventListener('click', clickHandler);
+            return button;
+        }
+
+        function deleteHelpRequest(entryId) {
+            // Implement the logic to delete the help request with the specified ID
+            fetch(`/delete_help_request/${entryId}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete help request');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data.message);
+                    fetchDataAndRender(); // Fetch and render after deletion
+                })
+                .catch(error => {
+                    console.error('Error deleting help request:', error);
+                });
+        }
+
+        function clearAll() {
+            // Implement the logic to clear all help requests
+            fetch('/clear_all_help_requests', {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to clear all help requests');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data.message);
+                    fetchDataAndRender(); // Fetch and render after clearing
+                })
+                .catch(error => {
+                    console.error('Error clearing all help requests:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .text {
+            font-size: 40pt;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="my_dataviz"></div>
+    <div class="text">
+        <p id="need_help"></p>
+    </div>
+    <script>
+
+        // Parse the Data
+        async function fetchData() {
+            const response = await fetch('/help');
+            const data = await response.json();
+            return data;
+        }
+
+        function foo(data) {
+            // If the data is the same as the previous, do nothing
+            if (JSON.stringify(data) === JSON.stringify(previousData)) {
+                console.log("Data has not changed.");
+                return;
+            }
+
+            // Update the numbers in the <p> tags
+            var helpText = "&#128078;: ";
+            helpText += Object.keys(data).map(entity => `${entity}: ${data[entity]}`).join(', ');
+            document.getElementById("need_help").innerHTML = helpText;
+
+            // Update previousData
+            previousData = data;
+        }
+
+        async function someFunction() {
+            const data = await fetchData();
+            console.log(data); // Log data to inspect its structure
+            foo(data);
+        }
+
+        someFunction();
+        setInterval(someFunction, 1000);
+    </script>
+</body>
+
+</html>
