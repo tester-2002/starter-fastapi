@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String
@@ -50,8 +50,10 @@ async def home(request: Request):
     return HTMLResponse('You are not logged in | <a href="/login">Login</a>')
 
 
+
+
 @app.route("/login", methods=["GET", "POST"])
-async def login(username: str, request: Request):
+async def login(username: str, request: Request = Depends()):
     # Check if the user exists in the database
     user = SessionLocal().query(User).filter_by(username=username).first()
 
