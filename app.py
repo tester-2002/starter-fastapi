@@ -8,12 +8,16 @@ from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
 
-# Database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./database.sqlite3"
+import os
+
+app = FastAPI()
+
+# Specify the path to the SQLite database file in the /tmp folder
+db_path = os.path.join("/tmp", "database.sqlite3")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
 # Session middleware for handling sessions
 app.add_middleware(SessionMiddleware, secret_key="123456")
 
