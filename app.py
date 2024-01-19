@@ -50,7 +50,7 @@ async def home(request: Request):
     return HTMLResponse('You are not logged in | <a href="/login">Login</a>')
 
 
-@app.post("/login")
+@app.route("/login", methods=["GET", "POST"])
 async def login(username: str, request: Request):
     # Check if the user exists in the database
     user = SessionLocal().query(User).filter_by(username=username).first()
@@ -63,7 +63,6 @@ async def login(username: str, request: Request):
 
     request.session["username"] = username
     return {"message": "Login successful"}
-
 
 @app.get("/help_data")
 async def help_data(request: Request):
